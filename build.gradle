@@ -24,15 +24,23 @@ def BINTRAY_REPOSITORY= 'JvmLib'
 def BINTRAY_ORGINIZATION= ""
 def ISSUE_URL= ""
 def SITE_URL= ""
-def VCS_URL= "https://github.com/alfalifr/SidevLibKt/tree/master/StdLib"
+def VCS_URL= "https://github.com/alfalifr/JVM_Lib"
 def LIBRARY_VERSION_NAME= '0.0.1xx'
 
-//group GROUP_ID
+group GROUP_ID
 version LIBRARY_VERSION_NAME
 
-//apply plugin : "maven-publish"
+apply plugin : "maven-publish"
 apply plugin: 'com.jfrog.bintray'
 
+/*
+java {
+    sourceSets {
+        main{}
+        test{}
+    }
+}
+ */
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
@@ -43,12 +51,71 @@ dependencies {
 }
 
 
+
 /*
 ==================
 Template Task
 ==================
  */
 
+///*
+tasks.register("sourcesJar", Jar) {
+    from sourceSets.main.allJava
+    classifier "sources"
+}
+
+tasks.register("javadocJar", Jar) {
+    from javadoc
+    classifier "javadoc"
+}
+// */
+
+/*
+components.java.withVariantsFromConfiguration(configurations.sourcesElements) {
+    skip()
+}
+ */
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+//            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = ARTIFACT_ID
+//                description = "WebDriver binary manager for java"
+                url = ISSUE_URL
+//                licenses = ['Apache-2.0']
+///*
+                licenses {
+                    license {
+                        name = "Apache-2.0" //"MIT"
+//                        url = "https://github.com/rosolko/wdm4j/blob/master/LICENSE"
+                    }
+                }
+//*/
+                developers {
+                    developer {
+                        id = "alfalifr"
+                        name = "Aliffiro" //"Aliaksandr Rasolka"
+                        email = "fathf48@gmail.com"
+                    }
+                }
+/*
+                scm {
+                    connection = "scm:git:https://github.com/rosolko/wdm4j.git"
+                    developerConnection = "scm:git:https://github.com/rosolko/wdm4j.git"
+                    url = "https://github.com/rosolko/wdm4j"
+                }
+*/
+            }
+// */
+        }
+    }
+}
+
+/*
 afterEvaluate {
     project.publishing.publications.all {
         // rename artifacts
@@ -78,9 +145,10 @@ afterEvaluate {
                 }
             }
         }
- */
+ * /
     }
 }
+*/
 
 def getBintrayUserProperty() {
     return hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
@@ -100,6 +168,7 @@ bintray {
     //f you set publish to true, the new version will be published the moment you upload to bintray. If false, it will not be published unless you press the publish button on the bintray web.
     // It is recommended that you make it false because it can prevent an accident that you accidentally release the latest version.
     publish = false
+    publications= ["mavenJava"]
 
     pkg {
         repo = BINTRAY_REPOSITORY
@@ -123,8 +192,10 @@ bintray {
 // it is not uploaded unless you explicitly specify artifacts in publications like this.
 // It is not necessary to have the findAll part,
 // [project name]-kotlinMultiplatformbut a directory containing only pom files will be uploaded, so it is better to exclude it.
+/*
 bintrayUpload.doFirst {
     publications = publishing.publications.collect {
+        println "Test .... ${it.name}"
         it.name
     }.findAll {
         it != "kotlinMultiplatform"
@@ -149,15 +220,21 @@ bintrayUpload.doFirst {
             }
         }
     }
- */
+ * /
 }
+*/
+
 ///*
 task modifySource{
     doFirst {
+        println "project.publishing= ${project.publishing}"
+        println "project.publishing.publications= ${project.publishing.publications}"
         project.publishing.publications.all {
             for(arti in it.artifacts){
-                if(arti.class.name == "org.gradle.api.publish.maven.internal.artifact.PublishArtifactBasedMavenArtifact_Decorated"
-                        && arti.classifier == "sources"){
+                println "arti = $arti"
+                println "arti.props = ${arti.properties}"
+                if(//arti.class.name == "org.gradle.api.publish.maven.internal.artifact.PublishArtifactBasedMavenArtifact_Decorated"
+                        arti.classifier == "sources"){
                     def file= (File) arti.file
                     println "artifact $arti file is about to be changed: file in ${file.path}"
                     try{
