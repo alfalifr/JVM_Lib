@@ -44,6 +44,7 @@ object TimeUtil {
     }
  */
 
+    @JvmOverloads
     fun parseToNamedMonth(date: String, monthLen: Int= 3, patternIn: String= FORMAT_DATE, patternOut: String= FORMAT_DATE)
     : String{
         val sdfOut= SimpleDateFormat(patternOut, Locale.getDefault())
@@ -53,6 +54,7 @@ object TimeUtil {
         return sdfOut.format(dateObj)
     }
 
+    @JvmOverloads
     fun convertFormatTo(time: String, patternIn: String= FORMAT_TIMESTAMP, patternOut: String= FORMAT_DATE): String{
         val sdfOut= SimpleDateFormat(patternOut, Locale.getDefault())
         val sdfIn= SimpleDateFormat(patternIn, Locale.getDefault())
@@ -61,6 +63,7 @@ object TimeUtil {
         return sdfOut.format(dateObj)
     }
 
+    @JvmOverloads
     fun simpleTimestamp(pattern: String= "yyyyddMMhhmmss"): String{
         val simpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
         return simpleDateFormat.format(Date())
@@ -76,6 +79,7 @@ object TimeUtil {
     /**
      * @param diff dalam millisecond
      */
+    @JvmOverloads
     fun timestamp(cal: Calendar= Calendar.getInstance(), pattern: String= FORMAT_TIMESTAMP, diff: Long= 0): String{
         val simpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
         cal.add(Calendar.MILLISECOND, diff.toInt())
@@ -109,6 +113,7 @@ object TimeUtil {
         )
     }
 
+    @JvmOverloads
     fun toCalObj(time: String, pattern: String= FORMAT_TIMESTAMP): Calendar{
         val simpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
         val cal= Calendar.getInstance()
@@ -120,6 +125,7 @@ object TimeUtil {
     /**
      * time2 - time1
      */
+    @JvmOverloads
     fun getTimeDiff(time1: String, time2: String, format: String= FORMAT_TIMESTAMP, out: String= ""): Long{
         val simpleDateFormat = SimpleDateFormat(format, Locale.getDefault())
 

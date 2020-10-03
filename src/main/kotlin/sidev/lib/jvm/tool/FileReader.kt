@@ -22,6 +22,7 @@ class FileReader() {
             }
         }
 
+    @JvmOverloads
     fun fileNotNull(msg: String= ""): Nothing? {
         return assertNotNull(
             file,
@@ -29,6 +30,7 @@ class FileReader() {
         )
     }
 
+    @JvmOverloads
     fun readLine(line: Int= 0, range: IntRange?= null): String {
         fileNotNull("readLine()")
         val scanner= Scanner(file)
@@ -63,6 +65,7 @@ class FileReader() {
         return out
     }
 
+    @JvmOverloads
     fun iterateLine(startLine: Int= -1, range: IntRange?= null, f: (String) -> Unit){
         fileNotNull("iterateLine()")
         val scanner= Scanner(file)

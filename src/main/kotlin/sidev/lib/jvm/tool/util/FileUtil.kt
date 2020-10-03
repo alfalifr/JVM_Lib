@@ -1,143 +1,175 @@
 package sidev.lib.jvm.tool.util
 
+import sidev.lib.console.prine
 import java.io.*
 import java.util.*
 
 object FileUtil{
+    const val FILE_TEST_NAME= "fileTest"
+
     //jika file sudah ada, maka isi akan ditimpa
-    fun salin(fileAsal: File, fileTujuan: File){
+    fun copy(src: File, dest: File){
 //            val fileToCopy = File("c:/temp/testoriginal.txt")
-        val inputStream = FileInputStream(fileAsal)
+        val inputStream = FileInputStream(src)
         val inChannel = inputStream.channel
 
 //            val newFile = File("c:/temp/testcopied.txt")
-        if(!fileTujuan.exists())
-            buatFileKosong(fileTujuan)
+        if(!dest.exists())
+            createEmptyFile(dest)
 
-        val outputStream = FileOutputStream(fileTujuan)
+        val outputStream = FileOutputStream(dest)
         val outChannel = outputStream.channel
 
-        inChannel.transferTo(0, fileAsal.length(), outChannel)
+        inChannel.transferTo(0, src.length(), outChannel)
 
         inputStream.close()
         outputStream.close()
     }
 
-    fun buatFileKosong(file: File){
+    fun createEmptyFile(file: File){
         file.parentFile.mkdirs()
         val pw= PrintWriter(file)
         pw.print("")
         pw.close()
     }
 
-    fun fileTersedia(fileBaru: File, keterangan: String= "", pjgDigit: Int= 3): File{
+    /**
+     * Mengetes apakah [dir] dapat dijadikan direktori untuk menulis file.
+     */
+    fun canWriteTo(dir: File): Boolean{
+        return try {
+            val testFile= File("${dir.absolutePath}/$FILE_TEST_NAME")
+            if(dir.exists() || dir.mkdirs()){
+                val pw= PrintWriter(testFile)
+                pw.print("")
+                pw.close()
+                testFile.delete()
+                true
+            } else false
+        } catch (e: FileNotFoundException){
+            prine("Tidak dapat menulis pada direktori: ${dir.absolutePath}")
+            false
+        }
+    }
+
+    /**
+     * Mengambil file dg nama yg serupa dg [newFile] yg ditambah dg [additional].
+     * File yg dikembalikan merupakan instance File dg nama `fileBaru.absolutePath`.
+     * Nama file ditambah dg urutan dan [additional] jika sudah terdapat file serupa
+     * dg [newFile].
+     */
+    @JvmOverloads
+    fun getAvailableFile(newFile: File, additional: String= "", digitLen: Int= 3): File{
         var urutan= 1
-        val namaFile= fileBaru.absolutePath
+        val namaFile= newFile.absolutePath
         val indekAkhirTitik= namaFile.lastIndexOf(".")
         val namaFilePrefix= namaFile.substring(0, indekAkhirTitik)
         val ekstensiFile= namaFile.substring(indekAkhirTitik)
         val tambahanKeterangan=
-            if(keterangan.isNotEmpty()) "_$keterangan"
+            if(additional.isNotEmpty()) "_$additional"
             else ""
 
-        var fileDicek= fileBaru
+        var fileDicek= newFile
         while(fileDicek.exists())
             fileDicek = File("${namaFilePrefix}_${++urutan}$tambahanKeterangan$ekstensiFile")
 
         var strUrutan= StringUtil.angka(urutan)
-        strUrutan= StringUtil.angkaString(strUrutan, pjgDigit)
+        strUrutan= StringUtil.angkaString(strUrutan, digitLen)
         fileDicek = File("${namaFilePrefix}_$strUrutan$tambahanKeterangan$ekstensiFile")
 
         return fileDicek
     }
 
 
-    fun simpan(pathFile: String, isi: String, fileYgSama: Boolean= true): Boolean{
-        val fileOutput= File(pathFile)
-        return simpan(
+    @JvmOverloads
+    fun save(filePath: String, content: String, inSameFile: Boolean= true): Boolean{
+        val fileOutput= File(filePath)
+        return save(
             fileOutput,
-            isi,
-            fileYgSama
+            content,
+            inSameFile
         )
     }
-    fun simpan(file: File, isi: ByteArray, fileYgSama: Boolean= true): Boolean{
-        return simpan(
+    @JvmOverloads
+    fun save(file: File, content: ByteArray, inSameFile: Boolean= true): Boolean{
+        return save(
             file,
-            String(isi),
-            fileYgSama
+            String(content),
+            inSameFile
         )
     }
-    fun simpan(file: File, isi: String, fileYgSama: Boolean= true): Boolean {
-        return simpanTulis_dalam(
+    @JvmOverloads
+    fun save(file: File, content: String, inSameFile: Boolean= true): Boolean {
+        return internalWriteTo(
             file,
-            isi,
-            fileYgSama,
+            content,
+            inSameFile,
             false
         )
     }
 
-    fun simpanln(pathFile: String, isi: String, fileYgSama: Boolean= true): Boolean{
+    @JvmOverloads
+    fun saveln(pathFile: String, content: String, inSameFile: Boolean= true): Boolean{
         val fileOutput= File(pathFile)
-        return simpanln(
+        return saveln(
             fileOutput,
-            isi,
-            fileYgSama
+            content,
+            inSameFile
         )
     }
-    fun simpanln(file: File, isi: ByteArray, fileYgSama: Boolean= true): Boolean{
-        return simpanln(
+    @JvmOverloads
+    fun saveln(file: File, content: ByteArray, inSameFile: Boolean= true): Boolean{
+        return saveln(
             file,
-            String(isi),
-            fileYgSama
+            String(content),
+            inSameFile
         )
     }
-    fun simpanln(file: File, isi: String, fileYgSama: Boolean= true): Boolean {
-        return simpanTulis_dalam(
+    @JvmOverloads
+    fun saveln(file: File, content: String, inSameFile: Boolean= true): Boolean {
+        return internalWriteTo(
             file,
-            isi,
-            fileYgSama,
+            content,
+            inSameFile,
             true
         )
     }
 
-    private fun simpanTulis_dalam(file: File, isi: String, fileYgSama: Boolean, gantiBaris: Boolean): Boolean{
+    private fun internalWriteTo(file: File, content: String, inSameFile: Boolean, newLine: Boolean): Boolean{
         if(!file.exists())
             file.parentFile.mkdirs()
-        try {
-            val fw= FileWriter(file, fileYgSama)
+        return try {
+            val fw= FileWriter(file, inSameFile)
             val pw= PrintWriter(fw)
-            if(gantiBaris)
-                pw.println(isi)
+            if(newLine)
+                pw.println(content)
             else
-                pw.print(isi)
+                pw.print(content)
             pw.close()
-            return true
+            true
         } catch (error: Exception) {
-            return false
+            false
         }
     }
 
-
-    fun bacaStrDariFile(pathFile: String): String?{
-        val fileOutput= File(pathFile)
-        return bacaStrDariFile(
-            fileOutput
-        )
+    fun readStrFrom(filePath: String): String?{
+        val fileOutput= File(filePath)
+        return readStrFrom(fileOutput)
     }
-    fun bacaStrDariFile(file: File): String?{
+    fun readStrFrom(file: File): String?{
         if(!file.exists()) return null
-        try{
+        return try{
             val input= Scanner(file)
             var str= ""
             while(input.hasNextLine())
                 str += "${input.nextLine()}\n"
-            return str
-        }catch(error: Exception){
-            return null
+            str
+        } catch(error: Exception){
+            null
         }
     }
 
-    fun isDirLocal(dir: String): Boolean{
+    fun dirExists(dir: String): Boolean{
         return File(dir).absoluteFile.exists()
     }
 }

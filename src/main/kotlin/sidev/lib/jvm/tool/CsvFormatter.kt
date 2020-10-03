@@ -162,6 +162,6 @@ class CsvFormatter() {
             rowStr= rowStr.removeSuffix(delimited)
             str += rowStr +"\n"
         }
-        FileUtil.simpan(fileReader.file!!, str, false)
+        FileUtil.save(fileReader.file!!, str, false)
     }
 }

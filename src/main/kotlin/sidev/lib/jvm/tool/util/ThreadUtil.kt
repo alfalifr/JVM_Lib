@@ -66,6 +66,7 @@ object ThreadUtil{
         return "$className.$funName()"
     }
 
+    @JvmOverloads
     fun getCurrentCallerFunName(backInd: Int= 0): String {
         val tempRes= getStackFunName(6 +backInd)
         val thisFunName= "getCurrentCallerFunName"

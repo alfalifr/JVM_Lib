@@ -12,6 +12,7 @@ import kotlin.math.pow
 object StringUtil{
 
     //pola: "{0}_{1}" dengan key: {"email":"joko@abc.com" "urutan":"001"} -> pola: "joko@abc.com_001"
+    @JvmOverloads
     fun polaString(pola: String?, key: HashMap<String, String>?, namaKey: Array<String> = arrayOf()): String?{
         if(pola == null || key == null)
             return null
@@ -104,6 +105,7 @@ object StringUtil{
         return false
     }
 
+    @JvmOverloads
     fun angkaKah(str: String, indek: Int= -1, sampai: Int= indek+1, basis: Int= 10): Boolean{
         var benarKah= true
         val strDicek=
@@ -178,6 +180,7 @@ object StringUtil{
         "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
     val BASIS_SESUAIKAN= kumpulanAngka.size
 
+    @JvmOverloads
     fun angka(desimal: Int, basis: Int= kumpulanAngka.size): String{
         if(desimal == 0)
             return ""
@@ -189,6 +192,7 @@ object StringUtil{
             )
             }${kumpulanAngka[desimal%basis]}"
     }
+    @JvmOverloads
     fun angka(angkaStr: String, basis: Int= 10): Int{
         var angka= 0.0
         for(i in angkaStr.length-1 downTo 0)
@@ -196,6 +200,7 @@ object StringUtil{
         return angka.toInt()
     }
 
+    @JvmOverloads
     fun angkaDesimal(angka: Double, dibelakangKoma: Int= 2): String{
         var pola= "##."
         for(i in 0 until dibelakangKoma)
@@ -212,6 +217,7 @@ object StringUtil{
     }
 
     //@param toleransi punya nilai 0-1]
+    @JvmOverloads
     fun cocokan(str1: String, str2: String, toleransi: Float, ketat: Boolean= false): Boolean{
         val batas= if(toleransi in 0.0..1.0) toleransi
         else 0.toFloat()
@@ -342,6 +348,7 @@ object StringUtil{
    Pola Huruf Kapital
    ==============================
    */
+    @JvmOverloads
     fun toSnakeCase(strCamelCase: String, kecilSemua: Boolean= false): String{
         var strHasil= strCamelCase
         var i= -1
@@ -372,6 +379,7 @@ JSON area -> Untuk operasi simpel string JSON
     /**
      * First occurrence
      */
+    @JvmOverloads
     fun getJsonPrimitiveValue(jsonStr: String, key: String, occurrenceInd: Int= 0,
                               quote: Char= '"', delimiter: Char= ','): String? {
 //        var keyIndFound= false
