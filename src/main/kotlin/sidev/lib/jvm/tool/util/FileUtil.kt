@@ -1,11 +1,31 @@
 package sidev.lib.jvm.tool.util
 
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
 import sidev.lib.console.prine
 import java.io.*
 import java.util.*
 
+
 object FileUtil{
+    data class WriteConfig(var line: Int, var column: Int= -1, var writeMode: Int= 1 /*WRITE_CONTINUE*/){
+        val WRITE_CONTINUE= 1
+        val WRITE_STOP= 0
+
+        fun stop(){ writeMode= WRITE_STOP }
+        val isStopped: Boolean
+            get()= writeMode == WRITE_STOP
+    }
+
     const val FILE_TEST_NAME= "fileTest"
+
+    val workingDir: String
+        get()= System.getProperty("user.dir")
+
+    val defaultOutputDir: File
+        get()= File("$workingDir/_output").also {
+            if(!it.exists()) it.mkdirs()
+        }
 
     //jika file sudah ada, maka isi akan ditimpa
     fun copy(src: File, dest: File){
@@ -59,7 +79,7 @@ object FileUtil{
      * dg [newFile].
      */
     @JvmOverloads
-    fun getAvailableFile(newFile: File, additional: String= "", digitLen: Int= 3): File{
+    fun getAvailableFile(newFile: File, additional: String = "", digitLen: Int = 3): File{
         var urutan= 1
         val namaFile= newFile.absolutePath
         val indekAkhirTitik= namaFile.lastIndexOf(".")
@@ -82,7 +102,7 @@ object FileUtil{
 
 
     @JvmOverloads
-    fun save(filePath: String, content: String, inSameFile: Boolean= true): Boolean{
+    fun save(filePath: String, content: String, inSameFile: Boolean = true): Boolean{
         val fileOutput= File(filePath)
         return save(
             fileOutput,
@@ -91,7 +111,7 @@ object FileUtil{
         )
     }
     @JvmOverloads
-    fun save(file: File, content: ByteArray, inSameFile: Boolean= true): Boolean{
+    fun save(file: File, content: ByteArray, inSameFile: Boolean = true): Boolean{
         return save(
             file,
             String(content),
@@ -99,7 +119,7 @@ object FileUtil{
         )
     }
     @JvmOverloads
-    fun save(file: File, content: String, inSameFile: Boolean= true): Boolean {
+    fun save(file: File, content: String, inSameFile: Boolean = true): Boolean {
         return internalWriteTo(
             file,
             content,
@@ -109,7 +129,7 @@ object FileUtil{
     }
 
     @JvmOverloads
-    fun saveln(pathFile: String, content: String, inSameFile: Boolean= true): Boolean{
+    fun saveln(pathFile: String, content: String, inSameFile: Boolean = true): Boolean{
         val fileOutput= File(pathFile)
         return saveln(
             fileOutput,
@@ -118,7 +138,7 @@ object FileUtil{
         )
     }
     @JvmOverloads
-    fun saveln(file: File, content: ByteArray, inSameFile: Boolean= true): Boolean{
+    fun saveln(file: File, content: ByteArray, inSameFile: Boolean = true): Boolean{
         return saveln(
             file,
             String(content),
@@ -126,14 +146,8 @@ object FileUtil{
         )
     }
     @JvmOverloads
-    fun saveln(file: File, content: String, inSameFile: Boolean= true): Boolean {
-        return internalWriteTo(
-            file,
-            content,
-            inSameFile,
-            true
-        )
-    }
+    fun saveln(file: File, content: String, inSameFile: Boolean = true): Boolean =
+        internalWriteTo(file, content, inSameFile, true)
 
     private fun internalWriteTo(file: File, content: String, inSameFile: Boolean, newLine: Boolean): Boolean{
         if(!file.exists())
@@ -164,12 +178,56 @@ object FileUtil{
             while(input.hasNextLine())
                 str += "${input.nextLine()}\n"
             str
-        } catch(error: Exception){
+        } catch (error: Exception){
             null
         }
     }
 
     fun dirExists(dir: String): Boolean{
         return File(dir).absoluteFile.exists()
+    }
+
+    /**
+     * Fungsi akan selalu dalam mode new file. Artinya, jika [file] sebelumnya udah ada, maka akan ditimpa.
+     *
+     * @param:
+     *  [delimiter] adalah pemisah antar kolom.
+     *  [valueClosure] adalah pengapit untuk value pada tiap kolom.
+     *  [valueExtractor] mengembalikan nilai untuk tiap kolom.
+     *   Fungsi ini akan terus melakukan loop untuk tiap line hingga [WriteConfig].writeMode == WRITE_STOP
+     */
+    fun writeToCsv(
+        file: File,
+        delimiter: String= ";", valueClosure: String= "\"",
+        vararg headers: String,
+        valueExtractor: (config: WriteConfig) -> Any?
+    ){
+        //val cursor: DbCursor = op.query("SELECT * FROM $tableName")
+//        val dir: File = FileUtil.getCsvFileDest(tableName.toString() + ".csv")
+        saveln(
+            file,
+            headers.scan("") { acc, s ->
+                "$acc$delimiter$valueClosure$s$valueClosure"
+            }.last(),
+            false
+        )
+
+        val writeConfig= WriteConfig(0)
+
+        line@ while (true){
+            var lineStr= ""
+            for(i in headers.indices){
+                val res= (valueExtractor(writeConfig.apply {
+                    column= i
+                })?.toString()) ?: ""
+
+                if(writeConfig.isStopped)
+                    break@line
+
+                lineStr += "$valueClosure$res$valueClosure$delimiter"
+            }
+            saveln(file, lineStr)
+            writeConfig.line++
+        }
     }
 }

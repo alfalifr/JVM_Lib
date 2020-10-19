@@ -48,6 +48,7 @@ dependencies {
 
     implementation "sidev.lib.kotlin.multi:StdLib-jvm:0.0.1x"
     implementation("org.apache.commons:commons-lang3:3.6")
+    implementation 'org.apache.commons:commons-csv:1.8'
 }
 
 
