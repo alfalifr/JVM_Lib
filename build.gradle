@@ -24,7 +24,7 @@ def BINTRAY_REPOSITORY= "SidevLib" //'JvmLib'
 def BINTRAY_ORGINIZATION= ""
 def ISSUE_URL= ""
 def SITE_URL= ""
-def VCS_URL= "https://github.com/alfalifr/JVM_Lib"
+def VCS_URL= "https://github.com/alfalifr/JvmStdLib"
 def LIBRARY_VERSION_NAME= '0.0.1xx'
 
 group GROUP_ID
@@ -46,7 +46,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
-    implementation "sidev.lib.kotlin.multi:StdLib-jvm:0.0.1x"
+    implementation "sidev.lib.kotlin:KtStdLib-jvm:0.0.1x"
     implementation("org.apache.commons:commons-lang3:3.6")
     implementation 'org.apache.commons:commons-csv:1.8'
 }
