@@ -19,8 +19,8 @@ repositories {
 }
 
 def GROUP_ID= 'sidev.lib.jvm'
-def ARTIFACT_ID= 'JVM_Lib'
-def BINTRAY_REPOSITORY= 'JvmLib'
+def ARTIFACT_ID= "JvmStdLib" //'JVM_Lib'
+def BINTRAY_REPOSITORY= "SidevLib" //'JvmLib'
 def BINTRAY_ORGINIZATION= ""
 def ISSUE_URL= ""
 def SITE_URL= ""
