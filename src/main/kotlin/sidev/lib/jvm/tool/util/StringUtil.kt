@@ -519,7 +519,5 @@ Pola String Umum
     }
 
 
-    object Json{
-
-    }
+//    object Json{}
 }

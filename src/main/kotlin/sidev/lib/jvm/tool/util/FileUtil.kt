@@ -1,9 +1,8 @@
 package sidev.lib.jvm.tool.util
 
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
 import sidev.lib.console.prine
 import java.io.*
+import java.nio.charset.Charset
 import java.util.*
 
 
@@ -102,58 +101,64 @@ object FileUtil{
 
 
     @JvmOverloads
-    fun save(filePath: String, content: String, inSameFile: Boolean = true): Boolean{
+    fun save(filePath: String, content: String, inSameFile: Boolean = true, charset: Charset?= null): Boolean{
         val fileOutput= File(filePath)
         return save(
             fileOutput,
             content,
-            inSameFile
+            inSameFile,
+            charset
         )
     }
     @JvmOverloads
-    fun save(file: File, content: ByteArray, inSameFile: Boolean = true): Boolean{
+    fun save(file: File, content: ByteArray, inSameFile: Boolean = true, charset: Charset?= null): Boolean{
         return save(
             file,
             String(content),
-            inSameFile
+            inSameFile,
+            charset
         )
     }
     @JvmOverloads
-    fun save(file: File, content: String, inSameFile: Boolean = true): Boolean {
+    fun save(file: File, content: String, inSameFile: Boolean = true, charset: Charset?= null): Boolean {
         return internalWriteTo(
             file,
             content,
             inSameFile,
-            false
+            false,
+            charset
         )
     }
 
     @JvmOverloads
-    fun saveln(pathFile: String, content: String, inSameFile: Boolean = true): Boolean{
+    fun saveln(pathFile: String, content: String, inSameFile: Boolean = true, charset: Charset?= null): Boolean{
         val fileOutput= File(pathFile)
         return saveln(
             fileOutput,
             content,
-            inSameFile
+            inSameFile,
+            charset
         )
     }
     @JvmOverloads
-    fun saveln(file: File, content: ByteArray, inSameFile: Boolean = true): Boolean{
+    fun saveln(file: File, content: ByteArray, inSameFile: Boolean = true, charset: Charset?= null): Boolean{
         return saveln(
             file,
             String(content),
-            inSameFile
+            inSameFile,
+            charset
         )
     }
     @JvmOverloads
-    fun saveln(file: File, content: String, inSameFile: Boolean = true): Boolean =
-        internalWriteTo(file, content, inSameFile, true)
+    fun saveln(file: File, content: String, inSameFile: Boolean = true, charset: Charset?= null): Boolean =
+        internalWriteTo(file, content, inSameFile, true, charset)
 
-    private fun internalWriteTo(file: File, content: String, inSameFile: Boolean, newLine: Boolean): Boolean{
+    private fun internalWriteTo(file: File, content: String, inSameFile: Boolean, newLine: Boolean, charset: Charset?): Boolean{
         if(!file.exists())
             file.parentFile.mkdirs()
         return try {
-            val fw= FileWriter(file, inSameFile)
+            val fw= if(charset == null) FileWriter(file, inSameFile)
+                else FileWriter(file, charset, inSameFile)
             val pw= PrintWriter(fw)
             if(newLine)
                 pw.println(content)
@@ -200,6 +205,7 @@ object FileUtil{
         file: File,
         delimiter: String= ";", valueClosure: String= "\"",
         vararg headers: String,
+        charset: Charset?= null,
         valueExtractor: (config: WriteConfig) -> Any?
     ){
         //val cursor: DbCursor = op.query("SELECT * FROM $tableName")
@@ -209,7 +215,8 @@ object FileUtil{
             headers.scan("") { acc, s ->
                 "$acc$delimiter$valueClosure$s$valueClosure"
             }.last(),
-            false
+            false,
+            charset
         )
 
         val writeConfig= WriteConfig(0)
@@ -226,7 +233,7 @@ object FileUtil{
 
                 lineStr += "$valueClosure$res$valueClosure$delimiter"
             }
-            saveln(file, lineStr)
+            saveln(file, lineStr, charset = charset)
             writeConfig.line++
         }
     }

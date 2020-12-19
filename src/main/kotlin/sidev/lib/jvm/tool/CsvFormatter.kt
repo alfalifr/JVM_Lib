@@ -5,8 +5,9 @@ import sidev.lib.collection.indexOfString
 import sidev.lib.jvm.tool.util.FileUtil
 import sidev.lib.text.getPrefixIn
 import sidev.lib.text.getQuoted
+import java.nio.charset.Charset
 
-class CsvFormatter() {
+class CsvFormatter internal constructor() {
     companion object{
         val delimiter= arrayOf(
             ";", ",", "\t", " "
@@ -17,10 +18,12 @@ class CsvFormatter() {
         )
     }
 
-    constructor(dir: String): this(){
+    constructor(dir: String, charset: Charset = Charset.defaultCharset()): this(){
         this.dir= dir
+        this.charset= charset
     }
 
+    lateinit var charset: Charset
     var delimited= delimiter.last()
         private set
     var quoted= quoter.last()
@@ -38,6 +41,7 @@ class CsvFormatter() {
         set(v){
             field= v
             fileReader.dir= v
+            fileReader.charset= charset
             if(v != null)
                 initConfig()
         }

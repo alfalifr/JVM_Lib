@@ -2,13 +2,16 @@ package sidev.lib.jvm.tool
 
 import sidev.lib.check.assertNotNull
 import java.io.File
+import java.nio.charset.Charset
 import java.util.*
 
-class FileReader() {
-    constructor(dir: String): this(){
+class FileReader internal constructor() {
+    constructor(dir: String, charset: Charset = Charset.defaultCharset()): this(){
         this.dir= dir
+        this.charset= charset
     }
 
+    lateinit var charset: Charset
     var file: File?= null
         private set
     var dir: String?= null
@@ -16,7 +19,7 @@ class FileReader() {
             field= v
             file= null
             if(v != null){
-                val file= File(dir)
+                val file= File(v)
                 if(file.exists())
                     this.file= file
             }
@@ -33,7 +36,7 @@ class FileReader() {
     @JvmOverloads
     fun readLine(line: Int= 0, range: IntRange?= null): String {
         fileNotNull("readLine()")
-        val scanner= Scanner(file)
+        val scanner= Scanner(file!!, charset)
 
         val rangeLimit= range ?: line .. line
         val rangeItr= 0 until rangeLimit.last
@@ -54,7 +57,7 @@ class FileReader() {
 
     fun readAll(): String {
         fileNotNull("readAll()")
-        val scanner= Scanner(file)
+        val scanner= Scanner(file!!, charset)
 
         var out= ""
 
@@ -68,7 +71,7 @@ class FileReader() {
     @JvmOverloads
     fun iterateLine(startLine: Int= -1, range: IntRange?= null, f: (String) -> Unit){
         fileNotNull("iterateLine()")
-        val scanner= Scanner(file)
+        val scanner= Scanner(file!!, charset)
 
         if(startLine >= 0 || range != null){
             val rangeLimit= range ?: startLine .. Int.MAX_VALUE
