@@ -45,27 +45,39 @@ object TimeUtil {
  */
 
     @JvmOverloads
-    fun parseToNamedMonth(date: String, monthLen: Int= 3, patternIn: String= FORMAT_DATE, patternOut: String= FORMAT_DATE)
-    : String{
-        val sdfOut= SimpleDateFormat(patternOut, Locale.getDefault())
-        val sdfIn= SimpleDateFormat(patternIn, Locale.getDefault())
+    fun parseToNamedMonth(
+        date: String,
+        monthLen: Int= 3,
+        patternIn: String= FORMAT_DATE,
+        patternOut: String= FORMAT_DATE,
+        localeIn: Locale = Locale.getDefault(),
+        localeOut: Locale = localeIn,
+    ): String{
+        val sdfOut= SimpleDateFormat(patternOut, localeOut)
+        val sdfIn= SimpleDateFormat(patternIn, localeIn)
 
         val dateObj = sdfIn.parse(date)
         return sdfOut.format(dateObj)
     }
 
     @JvmOverloads
-    fun convertFormatTo(time: String, patternIn: String= FORMAT_TIMESTAMP, patternOut: String= FORMAT_DATE): String{
-        val sdfOut= SimpleDateFormat(patternOut, Locale.getDefault())
-        val sdfIn= SimpleDateFormat(patternIn, Locale.getDefault())
+    fun convertFormatTo(
+        time: String,
+        patternIn: String= FORMAT_TIMESTAMP,
+        patternOut: String= FORMAT_DATE,
+        localeIn: Locale = Locale.getDefault(),
+        localeOut: Locale = localeIn,
+    ): String{
+        val sdfOut= SimpleDateFormat(patternOut, localeOut)
+        val sdfIn= SimpleDateFormat(patternIn, localeIn)
 
         val dateObj = sdfIn.parse(time)
         return sdfOut.format(dateObj)
     }
 
     @JvmOverloads
-    fun simpleTimestamp(pattern: String= "yyyyddMMhhmmss"): String{
-        val simpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
+    fun simpleTimestamp(pattern: String= "yyyyddMMhhmmss", locale: Locale = Locale.getDefault()): String{
+        val simpleDateFormat = SimpleDateFormat(pattern, locale)
         return simpleDateFormat.format(Date())
     }
 
@@ -80,8 +92,13 @@ object TimeUtil {
      * @param diff dalam millisecond
      */
     @JvmOverloads
-    fun timestamp(cal: Calendar= Calendar.getInstance(), pattern: String= FORMAT_TIMESTAMP, diff: Long= 0): String{
-        val simpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
+    fun timestamp(
+        cal: Calendar= Calendar.getInstance(),
+        pattern: String= FORMAT_TIMESTAMP,
+        diff: Long= 0,
+        locale: Locale = Locale.getDefault()
+    ): String{
+        val simpleDateFormat = SimpleDateFormat(pattern, locale)
         cal.add(Calendar.MILLISECOND, diff.toInt())
         return simpleDateFormat.format(cal.time)
     }
@@ -90,7 +107,7 @@ object TimeUtil {
      * Otomatis menghitung tanggal yang sesuai
      * @param month dimulai dari 1
      */
-    fun timestamp(day: Int, month: Int, year: Int, pattern: String= FORMAT_TIMESTAMP): String{
+    fun timestamp(day: Int, month: Int, year: Int, pattern: String= FORMAT_TIMESTAMP, locale: Locale = Locale.getDefault()): String{
         val cal= Calendar.getInstance()
         val month= if(month in 1 .. 12) month
         else if(month > 12) 12
@@ -109,13 +126,14 @@ object TimeUtil {
 //            cal.set(year, month-1, day)
         return timestamp(
             cal,
-            pattern
+            pattern,
+            locale = locale
         )
     }
 
     @JvmOverloads
-    fun toCalObj(time: String, pattern: String= FORMAT_TIMESTAMP): Calendar{
-        val simpleDateFormat = SimpleDateFormat(pattern, Locale.getDefault())
+    fun toCalObj(time: String, pattern: String= FORMAT_TIMESTAMP, locale: Locale = Locale.getDefault()): Calendar{
+        val simpleDateFormat = SimpleDateFormat(pattern, locale)
         val cal= Calendar.getInstance()
         cal.time= simpleDateFormat.parse(time)
         return cal
@@ -126,8 +144,14 @@ object TimeUtil {
      * time2 - time1
      */
     @JvmOverloads
-    fun getTimeDiff(time1: String, time2: String, format: String= FORMAT_TIMESTAMP, out: String= ""): Long{
-        val simpleDateFormat = SimpleDateFormat(format, Locale.getDefault())
+    fun getTimeDiff(
+        time1: String,
+        time2: String,
+        format: String= FORMAT_TIMESTAMP,
+        out: String= "",
+        locale: Locale = Locale.getDefault()
+    ): Long{
+        val simpleDateFormat = SimpleDateFormat(format, locale)
 
         val date1 = simpleDateFormat.parse(time1) //"08:00 AM"
         val date2 = simpleDateFormat.parse(time2) //"04:00 PM"
