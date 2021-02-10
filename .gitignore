@@ -4,3 +4,4 @@ gradle.properties
 .backup/
 .idea/
 build/
+_output/
