@@ -10,6 +10,9 @@ import java.nio.charset.Charset
 import java.nio.charset.UnsupportedCharsetException
 import kotlin.math.min
 
+val URLConnection.contentLengthLong_: Long
+    get()= (getHeaderField("Content-Length") ?: getHeaderField("content-length"))?.toLong() ?: -1
+
 val URLConnection.acceptRange: Boolean
     get()= (getHeaderField("Accept-Ranges") ?: getHeaderField("accept-ranges")).let {
         it != null && it.equals("none", true)
@@ -27,12 +30,18 @@ val URLConnection.requestedFileName: String?
         } else null
     }
 
-private fun URLConnection.checkConnection(): Boolean{
+private fun URLConnection.checkConnection(): Boolean {
     if(this is HttpURLConnection){
         if(responseCode != HttpURLConnection.HTTP_OK) return false
     }
+    //`inputStream.available()` tidak bisa dijadikan sbg patokan kalo di Android.
+/*
     val inputStream= inputStream
-    if(inputStream.available() <= 0) return false
+    val available= inputStream.available()
+    if(available == 0)
+        return inputStream.read()
+    return 0
+ */
     return true
 }
 
@@ -45,13 +54,9 @@ fun URLConnection.readStreamBufferByte(
     bufferByte: ByteArray, offset: Int = 0, len: Int = bufferByte.size,
     onProgression: ((readByteLen: Int, current: Long, len: Long) -> Unit)? = null
 ){
-    if(this is HttpURLConnection){
-        if(responseCode != HttpURLConnection.HTTP_OK) return
-    }
-    val inputStream= inputStream
-    if(inputStream.available() <= 0) return
+    if(!checkConnection()) return
 
-    val contentLen= contentLengthLong
+    val contentLen= contentLengthLong_
     var i= 0L
     var readByteLen: Int
 
@@ -74,15 +79,11 @@ fun URLConnection.saveBufferByteToFile(
     append: Boolean = true,
     onProgression: ((readByteLen: Int, current: Long, len: Long) -> Unit)? = null
 ) {
-    if(this is HttpURLConnection){
-        if(responseCode != HttpURLConnection.HTTP_OK) return
-    }
-    val inputStream= inputStream
-    if(inputStream.available() <= 0) return
-    if(!fileOutput.exists()) throw IllegalStateExc(
-        currentState = "!fileOutput.exists()",
-        expectedState = "fileOutput.exists()",
-        detMsg = "`fileOutput` ($fileOutput) tidak ada di sistem file"
+    if(!checkConnection()) return
+    if(!fileOutput.parentFile!!.exists()) throw IllegalStateExc(
+        currentState = "!fileOutput.parentFile.exists()",
+        expectedState = "fileOutput.parentFile.exists()",
+        detMsg = "`fileOutput.parentFile` (${fileOutput.parentFile}) tidak ada di sistem file"
     )
 
     val fos= FileOutputStream(fileOutput, append)
@@ -127,11 +128,9 @@ private fun URLConnection.readStream_internal(
     onProgression: (obj: Any?, current: Long, len: Long) -> Unit,
     //autoReset: Boolean = true
 ) {
-    if(this is HttpURLConnection){
-        if(responseCode != HttpURLConnection.HTTP_OK) return
-    }
+    if(!checkConnection()) return
+
     val inputStream= inputStream
-    if(inputStream.available() <= 0) return
 
     if(offset > 0) {
         if(!acceptRange) throw IllegalStateExc(
@@ -150,7 +149,7 @@ private fun URLConnection.readStream_internal(
             catch (e: UnsupportedCharsetException) { null }
         } else null
     } ?: Charset.defaultCharset()
-    val len = contentLengthLong
+    val len = contentLengthLong_
 
     var i= 0L
 
@@ -229,13 +228,9 @@ private fun URLConnection.responseStr_internal(
     onProgression: ((obj: Any?, current: Long, len: Long) -> Unit)?,
     //autoReset: Boolean = true
 ): String? {
-    if(this is HttpURLConnection){
-        if(responseCode != HttpURLConnection.HTTP_OK)
-            return null
-    }
+    if(!checkConnection()) return null
+
     val inputStream= inputStream
-    if(inputStream.available() <= 0)
-        return null
 
     if(offset > 0){
         if(!acceptRange) throw IllegalStateExc(
@@ -254,7 +249,7 @@ private fun URLConnection.responseStr_internal(
             catch (e: UnsupportedCharsetException) { null }
         } else null
     } ?: Charset.defaultCharset()
-    val len = contentLengthLong
+    val len = contentLengthLong_
 
     var i= 0L
 
@@ -268,14 +263,16 @@ private fun URLConnection.responseStr_internal(
                 while(in_.readLine().also { lineStr = it } != null){
                     sb += "$lineStr\n"
                     //prine("lineStr= $lineStr")
-                    onProgression?.invoke(lineStr, i++, len)
+                    onProgression?.invoke(lineStr, i, len)
+                    i += 1
                 }
             } else {
                 var char: Char?
                 while(in_.read().also { char = it.toChar() } >= 0){
                     sb += char!!
                     //prine("char= $char")
-                    onProgression?.invoke(char, i++, len)
+                    onProgression?.invoke(char, i, len)
+                    i += 1
                 }
             }
         }
@@ -287,7 +284,8 @@ private fun URLConnection.responseStr_internal(
                     bytes += byte
                     //sb += byte
                     //prine("byte= $byte")
-                    onProgression?.invoke(byte, i++, len)
+                    onProgression?.invoke(byte, i, len)
+                    i += 1
                 }
                 //val arr= bytes.toArray()
                 val bytesArr= ByteArray(bytes.size){ bytes[it].toByte() }
@@ -315,7 +313,8 @@ private fun URLConnection.responseStr_internal(
                         bytes += inputStream.read().also { byte = it }
                         //sb += byte
                         //prine("byte= $byte")
-                        onProgression?.invoke(byte, i++, len)
+                        onProgression?.invoke(byte, i, len)
+                        i += 1
                     }
                     //progress += limit +1
                     remain -= limit +1
@@ -326,7 +325,7 @@ private fun URLConnection.responseStr_internal(
             }
         }
     }
-    return sb.toString()
+    return if(i > 0) sb.toString() else null
 }
 
 /**

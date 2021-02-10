@@ -12,6 +12,8 @@ class StdTest {
         val url= URL("https://www.google.com/robots.txt")
         val conn= url.openConnection()
 
+        prin("conn.contentLengthLong_= ${conn.contentLengthLong_}")
+
         prin("=== res1 ===")
         val res1= conn.responseStr() != null
         prin("res1= $res1")
@@ -49,7 +51,7 @@ class StdTest {
 
     @Test
     fun saveToFileTest(){
-        val fileName= "ali imran_json"
+        val fileName= "ali imran_json 2"
         val urlStr= "https://api.banghasan.com/quran/format/json/surat/3" //"https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/6236" //"https://www.google.com/robots.txt"
         val url= URL(urlStr)
         val conn= url.openConnection() as HttpURLConnection
@@ -58,7 +60,7 @@ class StdTest {
         val dir= "_output"
         val file= File("$dir/${conn.requestedFileName ?: fileName}")
         file.parentFile.mkdirs()
-        file.createNewFile()
+        //file.createNewFile()
 
         prin("conn.requestMethod= ${conn.requestMethod}")
 
