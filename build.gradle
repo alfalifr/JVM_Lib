@@ -47,6 +47,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
     implementation "sidev.lib.kotlin:KtStdLib-jvm:0.0.1x.11112020"
+    //implementation "sidev.lib.kotlin:KtAsync-jvm:0.0.1x" //TODO hapus kalo mau di-deploy ke repo
     implementation("org.apache.commons:commons-lang3:3.6")
     implementation 'org.apache.commons:commons-csv:1.8'
 }

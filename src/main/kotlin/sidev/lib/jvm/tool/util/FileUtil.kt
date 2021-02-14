@@ -156,19 +156,22 @@ object FileUtil{
     private fun internalWriteTo(file: File, content: String, inSameFile: Boolean, newLine: Boolean, charset: Charset?): Boolean{
         if(!file.exists())
             file.parentFile.mkdirs()
+/*
         return try {
-            val fw= if(charset == null) FileWriter(file, inSameFile)
-                else FileWriter(file, charset, inSameFile)
-            val pw= PrintWriter(fw)
-            if(newLine)
-                pw.println(content)
-            else
-                pw.print(content)
-            pw.close()
             true
         } catch (error: Exception) {
             false
         }
+ */
+        val fw= if(charset == null) FileWriter(file, inSameFile)
+        else FileWriter(file, charset, inSameFile)
+        val pw= PrintWriter(fw)
+        if(newLine)
+            pw.println(content)
+        else
+            pw.print(content)
+        pw.close()
+        return true
     }
 
     fun readStrFrom(filePath: String): String?{

@@ -1,7 +1,11 @@
 import org.junit.Test
+//import sidev.lib.async.whileAndWait
+import sidev.lib.collection.joinToString
 import sidev.lib.console.prin
 import sidev.lib.console.prine
 import sidev.lib.jvm.tool.`fun`.*
+import sidev.lib.jvm.tool.util.FileUtil
+import sidev.lib.jvm.tool.util.TimeUtil
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
@@ -52,7 +56,7 @@ class StdTest {
     @Test
     fun saveToFileTest(){
         val fileName= "ali imran_json 2"
-        val urlStr= "https://api.banghasan.com/quran/format/json/surat/3" //"https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/6236" //"https://www.google.com/robots.txt"
+        val urlStr= "https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/6236" //"https://www.google.com/robots.txt" //"https://api.banghasan.com/quran/format/json/surat/3" //
         val url= URL(urlStr)
         val conn= url.openConnection() as HttpURLConnection
         //conn.requestMethod = "POST"
@@ -65,6 +69,56 @@ class StdTest {
         prin("conn.requestMethod= ${conn.requestMethod}")
 
         conn.saveBufferByteToFile(file, false)
+    }
+
+    @Test
+    fun headerTest(){
+        val urlStr= "https://www.everyayah.com/data/Husary_64kbps/002282.mp3" //"https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/289" //
+        val url= URL(urlStr)
+        val conn= url.openConnection()
+        prin(conn.contentLengthLong_)
+        prin(conn.acceptRange)
+        prin(conn.headerFields.joinToString(separator = "\n"))
+    }
+
+    @Test
+    fun downSizeTest(){
+        val urlPref= "https://www.everyayah.com/data/Husary_64kbps" //"https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy"
+        //val range= 1 .. 6236
+        var total= 0L
+        val timestamp= TimeUtil.timestamp(pattern = "dd-MM-yyyy_HH.mm.ss")
+        val file= File("_output/Alafasy Audio Bit Size - cdn.alquran.cloud - $timestamp - .csv")
+        prin(FileUtil.saveln(file, "ayat;len;cumulative;", false))
+/*
+        whileAndWait({ it.index < 6236 }, 2000, {
+            val bool= it is java.net.ConnectException
+            if(bool){
+                prine("Terjadi error = $it")
+                it.printStackTrace()
+            }
+            bool
+        }) {
+            val i= it.index + 1
+            val urlStr= "$urlPref/$i"
+            val url= URL(urlStr)
+            val conn= url.openConnection()
+            val len= conn.contentLengthLong
+            total += len
+            FileUtil.saveln(file, "$i;$len;$total;", true)
+            prin("i= $i len= $len total= $total")
+        }
+// */
+/*
+        for(i in range){
+            val urlStr= "$urlPref/$i"
+            val url= URL(urlStr)
+            val conn= url.openConnection()
+            val len= conn.contentLengthLong
+            total += len
+            FileUtil.saveln(file, "$len;$total;", true)
+            prin("i= $i len= $len total= $total")
+        }
+ */
     }
 
     @Test

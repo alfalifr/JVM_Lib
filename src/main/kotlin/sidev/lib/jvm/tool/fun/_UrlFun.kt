@@ -11,15 +11,15 @@ import java.nio.charset.UnsupportedCharsetException
 import kotlin.math.min
 
 val URLConnection.contentLengthLong_: Long
-    get()= (getHeaderField("Content-Length") ?: getHeaderField("content-length"))?.toLong() ?: -1
+    get()= (getHeaderField("Content-Length") /*?: getHeaderField("content-length")*/)?.toLong() ?: -1
 
 val URLConnection.acceptRange: Boolean
-    get()= (getHeaderField("Accept-Ranges") ?: getHeaderField("accept-ranges")).let {
-        it != null && it.equals("none", true)
+    get()= (getHeaderField("Accept-Ranges") /*?: getHeaderField("accept-ranges")*/).let {
+        it != null && !it.equals("none", true)
     }
 
 val URLConnection.requestedFileName: String?
-    get()= (getHeaderField("Content-Disposition") ?: getHeaderField("content-disposition"))?.let {
+    get()= (getHeaderField("Content-Disposition") /*?: getHeaderField("content-disposition")*/)?.let {
         val keyword= "filename="
         //val len= keyword.length
         val index= it.indexOf(keyword, ignoreCase = true)
