@@ -2,6 +2,7 @@ package sidev.lib.jvm.tool.util
 
 import sidev.lib.console.prine
 import java.io.*
+import java.lang.NullPointerException
 import java.nio.charset.Charset
 import java.util.*
 
@@ -155,7 +156,9 @@ object FileUtil{
 
     private fun internalWriteTo(file: File, content: String, inSameFile: Boolean, newLine: Boolean, charset: Charset?): Boolean{
         if(!file.exists())
-            file.parentFile.mkdirs()
+            file.parentFile?.mkdirs() ?: throw NullPointerException(
+                "Param `file` ($file) !.exists() dan tidak punya parent (file.parentFile == null) sehingga tidak dapat menulis ke `file`."
+            )
 /*
         return try {
             true
