@@ -25,14 +25,15 @@ val URLConnection.requestedFileName: String?
         val index= it.indexOf(keyword, ignoreCase = true)
         if(index >= 0){
             val begin= it.indexOf('"', index)
-            val end= it.indexOf('"', index +1)
-            it.substring(begin, end)
+            val end= it.indexOf('"', begin+1)
+            it.substring(begin+1, end)
         } else null
     }
 
-private fun URLConnection.checkConnection(): Boolean {
+
+private fun URLConnection.isCodeOk(): Boolean {
     if(this is HttpURLConnection){
-        if(responseCode != HttpURLConnection.HTTP_OK) return false
+        if(responseCode / 100 != 2) return false
     }
     //`inputStream.available()` tidak bisa dijadikan sbg patokan kalo di Android.
 /*
@@ -54,14 +55,14 @@ fun URLConnection.readStreamBufferByte(
     bufferByte: ByteArray, offset: Int = 0, len: Int = bufferByte.size,
     onProgression: ((readByteLen: Int, current: Long, len: Long) -> Unit)? = null
 ){
-    if(!checkConnection()) return
+    if(!isCodeOk()) return
 
     val contentLen= contentLengthLong_
     var i= 0L
     var readByteLen: Int
 
     while(inputStream.read(bufferByte, offset, len).also { readByteLen = it } > 0){
-        onProgression?.invoke(readByteLen, i++, contentLen)
+        onProgression?.invoke(readByteLen, (i + readByteLen).also { i= it }, contentLen)
     }
 }
 fun URLConnection.readStreamBufferByte(
@@ -79,7 +80,7 @@ fun URLConnection.saveBufferByteToFile(
     append: Boolean = true,
     onProgression: ((readByteLen: Int, current: Long, len: Long) -> Unit)? = null
 ) {
-    if(!checkConnection()) return
+    if(!isCodeOk()) return
     if(!fileOutput.parentFile!!.exists()) throw IllegalStateExc(
         currentState = "!fileOutput.parentFile.exists()",
         expectedState = "fileOutput.parentFile.exists()",
@@ -116,6 +117,7 @@ fun URLConnection.saveBufferByteToFile(
     onProgression: ((readByteLen: Int, current: Long, len: Long) -> Unit)? = null
 ) = saveBufferByteToFile(ByteArray(bufferLen), File(fileOutputName), append, onProgression)
 
+//TODO 26 Mar 2021: perbaiki nilai arg [onProgression] `current` karena msh brupa counter iterasi, bkn jml byte akumulasi.
 /**
  * Membaca stream byte dari `this.extension` [URLConnection] dala 3 [mode] [InputStreamReadMode].
  * [onProgression] `current` dimulai dari 0 dan `len` adalah eksklusif (Tidak masuk ke `current`).
@@ -128,7 +130,7 @@ private fun URLConnection.readStream_internal(
     onProgression: (obj: Any?, current: Long, len: Long) -> Unit,
     //autoReset: Boolean = true
 ) {
-    if(!checkConnection()) return
+    if(!isCodeOk()) return
 
     val inputStream= inputStream
 
@@ -228,7 +230,7 @@ private fun URLConnection.responseStr_internal(
     onProgression: ((obj: Any?, current: Long, len: Long) -> Unit)?,
     //autoReset: Boolean = true
 ): String? {
-    if(!checkConnection()) return null
+    if(!isCodeOk()) return null
 
     val inputStream= inputStream
 
