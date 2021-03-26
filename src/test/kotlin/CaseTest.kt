@@ -28,7 +28,12 @@ class CaseTest {
     }
 
     //@Test
-    fun download(url: String, dir: String, defaultFileName: String){
+    fun download(
+        url: String,
+        dir: String,
+        defaultFileName: String,
+        byteChunk: LongRange?= null,
+    ){
         val bufferLen = 2_000_000
         val urlStr = url //"http://download626.mediafire.com/1wcjdvtjbs1g/pph3v402wi4vjo0/macOS+Mojave+10.14.6+%2818G103%29.iso"
 
@@ -57,10 +62,12 @@ class CaseTest {
             tempFile.createNewFile()
         }
         var writtenLen = tempFile.length()
-        if(writtenLen > 0){
+        val part= byteChunk ?: writtenLen until length
+        if(part.first > 0){
             conn = url.openConnection()
             conn.addRequestProperty("Range", "bytes=${writtenLen}-$length") // starts with 0 ends with `length` (exclusive)
-            prin("Resuming file $tempFile ...  ($writtenLen / $length)")
+            if(writtenLen > 0)
+                prin("Resuming file $tempFile ...  ($writtenLen / $length)")
             //conn.headerFields["Content-Range"] = listOf()
         }
 /*
